@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claim Check | College Lost &amp; Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Claim Check home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      Claim Check
+    </a>
+    <button class="btn btn-dark" id="openPost" type="button">Post an item</button>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <h1>Lost something on campus? Someone may already be holding it.</h1>
+        <p>Post what you lost or found, and we'll line it up against matching items in the same category.</p>
+        <div class="hero-actions">
+          <button class="btn btn-lost" type="button" data-start="lost">I lost something</button>
+          <button class="btn btn-found" type="button" data-start="found">I found something</button>
+        </div>
+      </div>
+      <dl class="stats" aria-label="Portal summary">
+        <div><dt>Still missing</dt><dd id="statLost">0</dd></div>
+        <div><dt>Waiting for owner</dt><dd id="statFound">0</dd></div>
+        <div><dt>Returned</dt><dd id="statDone">0</dd></div>
+      </dl>
+    </section>
+
+    <section class="board" aria-labelledby="boardTitle">
+      <h2 id="boardTitle" class="sr-only">Items</h2>
+
+      <div class="toolbar">
+        <div class="tabs" role="group" aria-label="Filter by status">
+          <button type="button" class="tab is-active" data-status="all">All</button>
+          <button type="button" class="tab" data-status="lost">Lost</button>
+          <button type="button" class="tab" data-status="found">Found</button>
+          <button type="button" class="tab" data-status="resolved">Returned</button>
+        </div>
+        <div class="filters">
+          <label class="sr-only" for="search">Search items</label>
+          <input id="search" type="search" placeholder="Search by name, place or detail">
+          <label class="sr-only" for="catFilter">Category</label>
+          <select id="catFilter"></select>
+        </div>
+      </div>
+
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <p id="empty" class="empty" hidden>Nothing matches these filters. Clear the search, or post the item yourself.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Claim Check is a college project. Posts are saved in this browser only.</p>
+  </footer>
+
+  <!-- Post dialog -->
+  <dialog id="postDialog" aria-labelledby="postTitle">
+    <form id="postForm" novalidate>
+      <div class="dlg-head">
+        <h2 id="postTitle">Post an item</h2>
+        <button type="button" class="close" data-close aria-label="Close">&times;</button>
+      </div>
+
+      <fieldset class="seg">
+        <legend class="sr-only">Type of post</legend>
+        <input type="radio" name="type" id="typeLost" value="lost" checked>
+        <label for="typeLost">I lost it</label>
+        <input type="radio" name="type" id="typeFound" value="found">
+        <label for="typeFound">I found it</label>
+      </fieldset>
+
+      <div class="field">
+        <label for="fTitle">Item name</label>
+        <input id="fTitle" name="title" type="text" maxlength="60" placeholder="e.g. Black Casio calculator" required>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="fCategory">Category</label>
+          <select id="fCategory" name="category" required></select>
+        </div>
+        <div class="field">
+          <label for="fDate">Date</label>
+          <input id="fDate" name="date" type="date" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fLocation">Where</label>
+        <input id="fLocation" name="location" type="text" maxlength="60" placeholder="e.g. Library, 2nd floor" required>
+      </div>
+
+      <div class="field">
+        <label for="fDesc">Details</label>
+        <textarea id="fDesc" name="description" rows="3" maxlength="240" placeholder="Colour, brand, marks, what was inside"></textarea>
+        <small id="descHint" class="hint">For found items, leave out one detail that only the owner would know.</small>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="fName">Your name</label>
+          <input id="fName" name="owner" type="text" maxlength="40" required>
+        </div>
+        <div class="field">
+          <label for="fContact">Phone or email</label>
+          <input id="fContact" name="contact" type="text" maxlength="60" required>
+        </div>
+      </div>
+
+      <p id="postError" class="error" role="alert" hidden></p>
+
+      <div class="dlg-foot">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn btn-dark">Publish post</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Claim dialog -->
+  <dialog id="claimDialog" aria-labelledby="claimTitle">
+    <form id="claimForm" novalidate>
+      <div class="dlg-head">
+        <h2 id="claimTitle">Claim this item</h2>
+        <button type="button" class="close" data-close aria-label="Close">&times;</button>
+      </div>
+      <p id="claimItem" class="claim-item"></p>
+
+      <div class="field">
+        <label for="cName">Your name</label>
+        <input id="cName" type="text" maxlength="40" required>
+      </div>
+      <div class="field">
+        <label for="cContact">Phone or email</label>
+        <input id="cContact" type="text" maxlength="60" required>
+      </div>
+      <div class="field">
+        <label for="cProof" id="cProofLabel">Proof of ownership</label>
+        <textarea id="cProof" rows="3" maxlength="240" required></textarea>
+      </div>
+
+      <p id="claimError" class="error" role="alert" hidden></p>
+
+      <div class="dlg-foot">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn btn-dark" id="claimSubmit">Send claim</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Matches dialog -->
+  <dialog id="matchDialog" aria-labelledby="matchTitle">
+    <div class="dlg-head">
+      <h2 id="matchTitle">Possible matches</h2>
+      <button type="button" class="close" data-close aria-label="Close">&times;</button>
+    </div>
+    <p id="matchIntro" class="claim-item"></p>
+    <ul id="matchList" class="match-list"></ul>
+    <div class="dlg-foot">
+      <button type="button" class="btn btn-dark" data-close>Done</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
